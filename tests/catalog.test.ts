@@ -1,0 +1,208 @@
+import { describe, expect, it } from "vitest";
+import {
+  agruparPorSubcategoria,
+  filtrarProductos,
+  formatearPrecio,
+  ordenarProductos,
+  productosPorEncargo,
+  productosDestacados,
+  rangoPrecios,
+} from "@/lib/catalog";
+import { conOrden } from "@/lib/orden";
+import type { Producto } from "@/lib/types";
+
+let n = 0;
+function producto(over: Partial<Producto> = {}): Producto {
+  n += 1;
+  return {
+    id: `id-${n}`,
+    nombre: `Producto ${n}`,
+    marca: null,
+    descripcion_corta: null,
+    imagen_url: null,
+    categoria: "Aritos",
+    subcategoria: "Aritos",
+    estado: "Disponible",
+    precio: 10000,
+    destacado: false,
+    tonos: null,
+    orden_display: 0,
+    created_at: "2026-01-01T00:00:00Z",
+    ...over,
+  };
+}
+
+describe("ordenarProductos", () => {
+  it("ordena por orden_display y luego created_at", () => {
+    const a = producto({ orden_display: 2 });
+    const b = producto({ orden_display: 1, created_at: "2026-01-02T00:00:00Z" });
+    const c = producto({ orden_display: 1, created_at: "2026-01-01T00:00:00Z" });
+    expect(ordenarProductos([a, b, c]).map((p) => p.id)).toEqual([
+      c.id,
+      b.id,
+      a.id,
+    ]);
+  });
+});
+
+describe("filtrarProductos", () => {
+  const ps = [
+    producto({ categoria: "Aritos", subcategoria: "Aritos" }),
+    producto({ categoria: "Pulseras", subcategoria: "Pulseras" }),
+  ];
+  it("sin filtros devuelve todo", () => {
+    expect(filtrarProductos(ps, null, null)).toHaveLength(2);
+  });
+  it("filtra por categoria", () => {
+    expect(filtrarProductos(ps, "Pulseras", null)).toHaveLength(1);
+  });
+  it("solo disponibles filtra por estado Disponible", () => {
+    const qs = [
+      producto({ estado: "Disponible" }),
+      producto({ estado: "Por Encargo" }),
+      producto({ estado: "Sin stock" }),
+    ];
+    expect(filtrarProductos(qs, null, null, true)).toHaveLength(1);
+    expect(filtrarProductos(qs, null, null, false)).toHaveLength(3);
+  });
+  it("filtra por subcategoria", () => {
+    const qs = [
+      producto({ categoria: "Aritos", subcategoria: "Aritos" }),
+      producto({ categoria: "Aritos", subcategoria: "Otro" }),
+    ];
+    expect(filtrarProductos(qs, "Aritos", "Aritos")).toHaveLength(1);
+    expect(filtrarProductos(qs, "Aritos", "Inexistente")).toHaveLength(0);
+  });
+
+  it("busqueda filtra por nombre, case-insensitive", () => {
+    const rs = [
+      producto({ nombre: "Aros Argolla Dorados" }),
+      producto({ nombre: "Collar Perlas" }),
+    ];
+    expect(filtrarProductos(rs, null, null, false, "argolla")).toHaveLength(1);
+    expect(filtrarProductos(rs, null, null, false, "ARGOLLA")).toHaveLength(1);
+  });
+
+  it("busqueda filtra por marca y es null-safe", () => {
+    const rs = [producto({ marca: "Swarovski" }), producto({ marca: null })];
+    expect(filtrarProductos(rs, null, null, false, "swarovski")).toHaveLength(1);
+  });
+
+  it("busqueda vacia o solo espacios no filtra", () => {
+    const rs = [producto(), producto()];
+    expect(filtrarProductos(rs, null, null, false, "")).toHaveLength(2);
+    expect(filtrarProductos(rs, null, null, false, "   ")).toHaveLength(2);
+    expect(filtrarProductos(rs, null, null, false, null)).toHaveLength(2);
+  });
+
+  it("precioMin excluye los mas baratos", () => {
+    const rs = [producto({ precio: 5000 }), producto({ precio: 15000 })];
+    expect(filtrarProductos(rs, null, null, false, null, 10000)).toHaveLength(1);
+  });
+
+  it("precioMax excluye los mas caros", () => {
+    const rs = [producto({ precio: 5000 }), producto({ precio: 15000 })];
+    expect(
+      filtrarProductos(rs, null, null, false, null, null, 10000)
+    ).toHaveLength(1);
+  });
+
+  it("precioMin y precioMax forman un rango", () => {
+    const rs = [
+      producto({ precio: 4000 }),
+      producto({ precio: 8000 }),
+      producto({ precio: 20000 }),
+    ];
+    expect(
+      filtrarProductos(rs, null, null, false, null, 5000, 15000)
+    ).toHaveLength(1);
+  });
+
+  it("combina busqueda, precio y categoria con AND", () => {
+    const rs = [
+      producto({ categoria: "Aritos", nombre: "Aros Dorados", precio: 12000 }),
+      producto({ categoria: "Aritos", nombre: "Aros Dorados", precio: 30000 }),
+      producto({ categoria: "Pulseras", nombre: "Aros Dorados", precio: 12000 }),
+    ];
+    expect(
+      filtrarProductos(rs, "Aritos", null, false, "dorados", 10000, 20000)
+    ).toHaveLength(1);
+  });
+});
+
+describe("productosPorEncargo", () => {
+  it("devuelve solo estado Por Encargo", () => {
+    const ps = [producto(), producto({ estado: "Por Encargo" })];
+    expect(productosPorEncargo(ps)).toHaveLength(1);
+  });
+});
+
+describe("agruparPorSubcategoria", () => {
+  it("agrupa con todas las subcategorias presentes", () => {
+    const ps = [producto({ categoria: "Aritos", subcategoria: "Aritos", orden_display: 1 })];
+    const grupos = agruparPorSubcategoria(ps, "Aritos");
+    expect(Object.keys(grupos)).toEqual(["Aritos"]);
+    expect(grupos["Aritos"]).toHaveLength(1);
+  });
+
+  it("devuelve grupo vacio si la categoria no tiene productos", () => {
+    const grupos = agruparPorSubcategoria([], "Pulseras");
+    expect(grupos["Pulseras"]).toEqual([]);
+  });
+});
+
+describe("conOrden", () => {
+  it("asigna orden secuencial", () => {
+    const ps = [producto(), producto()];
+    expect(conOrden(ps)).toEqual([
+      { id: ps[0].id, orden_display: 0 },
+      { id: ps[1].id, orden_display: 1 },
+    ]);
+  });
+});
+
+describe("formatearPrecio", () => {
+  it("formatea con separador de miles y sin decimales", () => {
+    const resultado = formatearPrecio(12500);
+    expect(resultado).toContain("12.500");
+    expect(resultado).toContain("$");
+  });
+
+  it("formatea precio cero", () => {
+    const resultado = formatearPrecio(0);
+    expect(resultado).toContain("0");
+    expect(resultado).toContain("$");
+  });
+});
+
+describe("rangoPrecios", () => {
+  it("redondea el piso hacia abajo y el tope hacia arriba al paso", () => {
+    const ps = [producto({ precio: 63740 }), producto({ precio: 113980 })];
+    expect(rangoPrecios(ps)).toEqual({ piso: 63000, tope: 114000 });
+  });
+
+  it("no altera precios ya alineados al paso", () => {
+    const ps = [producto({ precio: 10000 }), producto({ precio: 50000 })];
+    expect(rangoPrecios(ps)).toEqual({ piso: 10000, tope: 50000 });
+  });
+
+  it("devuelve 0 en ambos si no hay productos", () => {
+    expect(rangoPrecios([])).toEqual({ piso: 0, tope: 0 });
+  });
+});
+
+describe("productosDestacados", () => {
+  it("devuelve solo destacados, ordenados", () => {
+    const a = producto({ destacado: true, orden_display: 2 });
+    const b = producto({ destacado: true, orden_display: 1 });
+    const c = producto();
+    expect(productosDestacados([a, b, c]).map((p) => p.id)).toEqual([
+      b.id,
+      a.id,
+    ]);
+  });
+
+  it("devuelve vacio si no hay destacados", () => {
+    expect(productosDestacados([producto(), producto()])).toEqual([]);
+  });
+});

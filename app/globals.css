@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  /* Paleta Tres Marías, derivada del rosa de marca (#ffd7f1). */
+  --color-marias-50: #fdf7fb;
+  --color-marias-100: #ffe8f3;
+  --color-marias-200: #ffd7f1;
+  --color-marias-300: #e6aad0;
+  --color-marias-400: #cb86b3;
+  --color-marias-500: #b65d97;
+  --color-marias-600: #99487c;
+  --color-marias-700: #763d62;
+  /* Acentos extra de marca, para fondos/badges puntuales. */
+  --color-marias-blush: #fadddd;
+  --color-marias-cream: #ede2d2;
+  /* TODO: --font-titulo usa Cormorant Garamond como placeholder hasta
+     tener los archivos .woff2 de RoxboroughCF (fuente de marca real).
+     Ver README para el paso de reemplazo. */
+  --font-serif: var(--font-titulo), Georgia, serif;
+  --font-sans: var(--font-cuerpo), system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #262626;
+  font-family: var(--font-sans);
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
