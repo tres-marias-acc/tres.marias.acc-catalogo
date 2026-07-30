@@ -23,7 +23,7 @@ export interface Producto {
   categoria: Categoria;
   subcategoria: string;
   // Solo aplica a productos de Fragancias (SUBCATEGORIAS del grupo Fragancias).
-  aroma: string | null;
+  aroma: string[] | null;
   estado: Estado;
   precio: number;
   destacado: boolean;

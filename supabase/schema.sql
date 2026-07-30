@@ -14,8 +14,8 @@ create table public.productos (
     'Spray Textil', 'Difusor', 'Cremas', 'Vela Aromática',
     'Invierno'
   )),
-  -- Solo se completa en productos de Fragancias.
-  aroma text,
+  -- Solo se completa en productos de Fragancias. Admite varios aromas.
+  aroma text[],
   estado text not null default 'Disponible'
     check (estado in ('Disponible', 'Sin stock')),
   precio integer not null check (precio >= 0),

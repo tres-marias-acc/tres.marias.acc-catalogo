@@ -53,7 +53,8 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
   const [grupo, setGrupo] = useState(grupoDeCategoria(categoria));
   const esAccesorio = grupo === "Accesorios";
   const esFragancia = grupo === "Fragancias";
-  const [aroma, setAroma] = useState(producto?.aroma ?? "");
+  const [aromas, setAromas] = useState<string[]>(producto?.aroma ?? []);
+  const [aromaInput, setAromaInput] = useState("");
   const [subcategoria, setSubcategoria] = useState(
     producto?.subcategoria ?? SUBCATEGORIAS[CATEGORIAS[0]][0]
   );
@@ -78,7 +79,21 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
     setGrupo(g);
     cambiarCategoria(categoriasDelGrupo(g)[0]);
     if (g !== "Accesorios") setTonos([]);
-    if (g !== "Fragancias") setAroma("");
+    if (g !== "Fragancias") {
+      setAromas([]);
+      setAromaInput("");
+    }
+  }
+
+  function agregarAroma() {
+    const valor = aromaInput.trim();
+    if (!valor) return;
+    setAromas((prev) => (prev.includes(valor) ? prev : [...prev, valor]));
+    setAromaInput("");
+  }
+
+  function quitarAroma(a: string) {
+    setAromas((prev) => prev.filter((x) => x !== a));
   }
 
   function elegirArchivo(f: File | null) {
@@ -119,7 +134,7 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
         imagen_url,
         categoria,
         subcategoria,
-        aroma: esFragancia ? aroma.trim() || null : null,
+        aroma: esFragancia && aromas.length > 0 ? aromas : null,
         estado,
         precio: precioNumero,
         destacado,
@@ -231,15 +246,50 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
         </label>
 
         {esFragancia && (
-          <label className="mt-4 block text-sm text-neutral-600">
-            Aroma
-            <input
-              value={aroma}
-              onChange={(e) => setAroma(e.target.value)}
-              placeholder="Ej: Lavanda"
-              className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-marias-300"
-            />
-          </label>
+          <div className="mt-4">
+            <span className="text-sm text-neutral-600">Aroma</span>
+            <div className="mt-1 flex gap-2">
+              <input
+                value={aromaInput}
+                onChange={(e) => setAromaInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    agregarAroma();
+                  }
+                }}
+                placeholder="Ej: Lavanda"
+                className="flex-1 rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-marias-300"
+              />
+              <button
+                type="button"
+                onClick={agregarAroma}
+                className="shrink-0 rounded-lg bg-marias-100 px-3 text-sm text-marias-700 hover:bg-marias-200"
+              >
+                Agregar
+              </button>
+            </div>
+            {aromas.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {aromas.map((a) => (
+                  <span
+                    key={a}
+                    className="flex items-center gap-1 rounded-full bg-marias-50 px-2.5 py-1 text-xs text-marias-700 ring-1 ring-marias-200"
+                  >
+                    {a}
+                    <button
+                      type="button"
+                      onClick={() => quitarAroma(a)}
+                      aria-label={`Quitar ${a}`}
+                      className="text-marias-500 hover:text-marias-700"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {esAccesorio && (

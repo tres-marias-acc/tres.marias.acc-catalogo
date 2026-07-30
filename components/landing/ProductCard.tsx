@@ -75,9 +75,9 @@ export default function ProductCard({
         {producto.tonos && producto.tonos.length > 0 && (
           <ColorSwatches tonos={producto.tonos} />
         )}
-        {producto.aroma && (
-          <p className="mt-1 text-xs font-medium uppercase tracking-widest text-marias-600">
-            {producto.aroma}
+        {producto.aroma && producto.aroma.length > 0 && (
+          <p className="mt-1 line-clamp-1 text-[10px] font-medium uppercase tracking-wide text-marias-600">
+            {producto.aroma.join(" · ")}
           </p>
         )}
         <p className="mt-auto pt-2 font-serif text-xl font-semibold text-marias-700 sm:text-2xl">
