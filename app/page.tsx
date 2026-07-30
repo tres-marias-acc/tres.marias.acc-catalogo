@@ -5,7 +5,7 @@ import Hero from "@/components/landing/Hero";
 import Navbar from "@/components/landing/Navbar";
 import { obtenerProductos } from "@/lib/supabase/server";
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 export default async function Home() {
   const productos = await obtenerProductos();
