@@ -19,11 +19,11 @@ export default function Hero() {
       {/* Blobs con parallax */}
       <motion.div
         style={{ y: yBlob1 }}
-        className="absolute -left-24 top-16 h-96 w-96 rounded-full bg-marias-200/50 blur-3xl"
+        className="absolute -left-24 top-16 h-96 w-96 rounded-full bg-marias-300/70 blur-3xl"
       />
       <motion.div
         style={{ y: yBlob2 }}
-        className="absolute -right-20 bottom-24 h-[28rem] w-[28rem] rounded-full bg-marias-300/40 blur-3xl"
+        className="absolute -right-20 bottom-24 h-[28rem] w-[28rem] rounded-full bg-marias-400/60 blur-3xl"
       />
 
       <motion.div
@@ -34,12 +34,12 @@ export default function Hero() {
         className="relative z-10 flex flex-col items-center px-6 text-center"
       >
         <Image
-          src="/brand/caligrafia.svg"
+          src="/brand/caligrafia.png"
           alt={config.marca}
-          width={640}
-          height={205}
+          width={1569}
+          height={430}
           priority
-          className="w-[min(82vw,640px)]"
+          className="h-auto w-[min(82vw,640px)]"
         />
         <motion.p
           initial={{ opacity: 0, y: 16 }}

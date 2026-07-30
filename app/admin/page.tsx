@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import type { Estado, Producto } from "@/lib/types";
-import { CATEGORIAS } from "@/lib/types";
+import { CATEGORIAS_SUELTAS, GRUPOS_FILTRO } from "@/lib/types";
 import type { Categoria } from "@/lib/types";
 import { agruparPorSubcategoria } from "@/lib/catalog";
 import { config } from "@/lib/config";
@@ -124,7 +124,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-marias-50/50">
       <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-marias-100 bg-white px-6 py-3">
         <div className="flex items-center gap-3">
-          <Image src="/brand/monogram.svg" alt={config.marca} width={40} height={30} />
+          <Image src="/brand/caligrafia.png" alt={config.marca} width={90} height={25} />
           <h1 className="font-serif text-xl">Panel Admin</h1>
         </div>
         <div className="flex gap-3">
@@ -133,20 +133,20 @@ export default function AdminPage() {
               setEditando(null);
               setFormAbierto(true);
             }}
-            className="rounded-full bg-marias-400 px-4 py-2 text-sm text-white hover:bg-marias-500"
+            className="rounded-full bg-marias-400 px-4 py-2 text-sm font-medium text-marias-700 hover:bg-marias-300"
           >
             + Nuevo producto
           </button>
           <a
             href="/"
             target="_blank"
-            className="rounded-full px-4 py-2 text-sm text-neutral-500 ring-1 ring-neutral-200 hover:bg-neutral-50"
+            className="rounded-full px-4 py-2 text-sm text-marias-600 ring-1 ring-marias-200 hover:bg-marias-50"
           >
             Ver landing
           </a>
           <button
             onClick={salir}
-            className="rounded-full px-4 py-2 text-sm text-neutral-500 ring-1 ring-neutral-200 hover:bg-neutral-50"
+            className="rounded-full px-4 py-2 text-sm text-marias-600 ring-1 ring-marias-200 hover:bg-marias-50"
           >
             Salir
           </button>
@@ -156,51 +156,97 @@ export default function AdminPage() {
       <main className="mx-auto max-w-4xl px-4 py-8">
         {cargando ? (
           <p className="text-center text-neutral-400">Cargando…</p>
+        ) : productos.length === 0 ? (
+          <p className="text-center text-neutral-400">
+            Todavía no cargaste productos. Usá &quot;+ Nuevo producto&quot;.
+          </p>
         ) : (
-          CATEGORIAS.map((cat) => (
-            <section key={cat} className="mb-10">
-              <h2 className="font-serif text-2xl text-marias-700">{cat}</h2>
-              {Object.entries(agruparPorSubcategoria(productos, cat)).map(
-                ([sub, items]) => (
-                  <div key={sub} className="mt-4">
-                    <h3 className="text-sm font-medium uppercase tracking-wider text-neutral-400">
-                      {sub}
-                    </h3>
-                    <DndContext
-                      collisionDetection={closestCenter}
-                      onDragEnd={onDragEnd(cat, sub)}
+          <>
+            {GRUPOS_FILTRO.filter((g) =>
+              g.categorias.some(
+                (cat) => agruparPorSubcategoria(productos, cat)[cat].length > 0
+              )
+            ).map((g) => (
+              <section key={g.label} className="mb-10">
+                <h2 className="font-serif text-2xl text-marias-700">{g.label}</h2>
+                {g.categorias
+                  .filter(
+                    (cat) => agruparPorSubcategoria(productos, cat)[cat].length > 0
+                  )
+                  .map((cat) => {
+                    const items = agruparPorSubcategoria(productos, cat)[cat];
+                    return (
+                      <div key={cat} className="mt-4">
+                        <h3 className="text-sm font-medium uppercase tracking-wider text-neutral-400">
+                          {cat}
+                        </h3>
+                        <DndContext
+                          collisionDetection={closestCenter}
+                          onDragEnd={onDragEnd(cat, cat)}
+                        >
+                          <SortableContext
+                            items={items.map((p) => p.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <div className="mt-2 space-y-2">
+                              {items.map((p) => (
+                                <SortableRow
+                                  key={p.id}
+                                  producto={p}
+                                  onEstado={(e) => cambiarEstado(p, e)}
+                                  onDestacado={() => cambiarDestacado(p)}
+                                  onEditar={() => {
+                                    setEditando(p);
+                                    setFormAbierto(true);
+                                  }}
+                                  onBorrar={() => borrar(p)}
+                                />
+                              ))}
+                            </div>
+                          </SortableContext>
+                        </DndContext>
+                      </div>
+                    );
+                  })}
+              </section>
+            ))}
+
+            {CATEGORIAS_SUELTAS.filter(
+              (cat) => agruparPorSubcategoria(productos, cat)[cat].length > 0
+            ).map((cat) => {
+              const items = agruparPorSubcategoria(productos, cat)[cat];
+              return (
+                <section key={cat} className="mb-10">
+                  <h2 className="font-serif text-2xl text-marias-700">{cat}</h2>
+                  <DndContext
+                    collisionDetection={closestCenter}
+                    onDragEnd={onDragEnd(cat, cat)}
+                  >
+                    <SortableContext
+                      items={items.map((p) => p.id)}
+                      strategy={verticalListSortingStrategy}
                     >
-                      <SortableContext
-                        items={items.map((p) => p.id)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        <div className="mt-2 space-y-2">
-                          {items.map((p) => (
-                            <SortableRow
-                              key={p.id}
-                              producto={p}
-                              onEstado={(e) => cambiarEstado(p, e)}
-                              onDestacado={() => cambiarDestacado(p)}
-                              onEditar={() => {
-                                setEditando(p);
-                                setFormAbierto(true);
-                              }}
-                              onBorrar={() => borrar(p)}
-                            />
-                          ))}
-                          {items.length === 0 && (
-                            <p className="rounded-lg border border-dashed border-marias-200 p-3 text-sm text-neutral-400">
-                              Sin productos
-                            </p>
-                          )}
-                        </div>
-                      </SortableContext>
-                    </DndContext>
-                  </div>
-                )
-              )}
-            </section>
-          ))
+                      <div className="mt-2 space-y-2">
+                        {items.map((p) => (
+                          <SortableRow
+                            key={p.id}
+                            producto={p}
+                            onEstado={(e) => cambiarEstado(p, e)}
+                            onDestacado={() => cambiarDestacado(p)}
+                            onEditar={() => {
+                              setEditando(p);
+                              setFormAbierto(true);
+                            }}
+                            onBorrar={() => borrar(p)}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </section>
+              );
+            })}
+          </>
         )}
       </main>
 

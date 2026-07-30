@@ -24,9 +24,7 @@ export function filtrarProductos(
       (!categoria || p.categoria === categoria) &&
       (!subcategoria || p.subcategoria === subcategoria) &&
       (!soloDisponibles || p.estado === "Disponible") &&
-      (!q ||
-        p.nombre.toLowerCase().includes(q) ||
-        (p.marca?.toLowerCase().includes(q) ?? false)) &&
+      (!q || p.nombre.toLowerCase().includes(q)) &&
       // == null para que 0 sea un limite valido, no "sin filtro"
       (precioMin == null || p.precio >= precioMin) &&
       (precioMax == null || p.precio <= precioMax)
@@ -49,10 +47,6 @@ export function rangoPrecios(productos: Producto[]): {
     piso: Math.floor(Math.min(...precios) / PASO_PRECIO) * PASO_PRECIO,
     tope: Math.ceil(Math.max(...precios) / PASO_PRECIO) * PASO_PRECIO,
   };
-}
-
-export function productosPorEncargo(productos: Producto[]): Producto[] {
-  return productos.filter((p) => p.estado === "Por Encargo");
 }
 
 export function agruparPorSubcategoria(

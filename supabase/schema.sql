@@ -2,15 +2,22 @@
 create table public.productos (
   id uuid primary key default gen_random_uuid(),
   nombre text not null,
-  marca text,
   descripcion_corta varchar(150),
   imagen_url text,
-  categoria text not null check (categoria in ('Aritos', 'Pulseras', 'Collares', 'Anillos')),
-  subcategoria text not null check (subcategoria in (
-    'Aritos', 'Pulseras', 'Collares', 'Anillos'
+  categoria text not null check (categoria in (
+    'Aritos', 'Pulseras', 'Collares', 'Anillos',
+    'Spray Textil', 'Difusor', 'Cremas', 'Vela Aromática',
+    'Invierno'
   )),
+  subcategoria text not null check (subcategoria in (
+    'Aritos', 'Pulseras', 'Collares', 'Anillos',
+    'Spray Textil', 'Difusor', 'Cremas', 'Vela Aromática',
+    'Invierno'
+  )),
+  -- Solo se completa en productos de Fragancias.
+  aroma text,
   estado text not null default 'Disponible'
-    check (estado in ('Disponible', 'Por Encargo', 'Sin stock')),
+    check (estado in ('Disponible', 'Sin stock')),
   precio integer not null check (precio >= 0),
   destacado boolean not null default false,
   tonos jsonb,

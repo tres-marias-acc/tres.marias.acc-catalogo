@@ -1,10 +1,18 @@
 import { createClient } from "@/lib/supabase/client";
 import { ordenarProductos } from "@/lib/catalog";
 import type { Producto } from "@/lib/types";
+import { MOCK_PRODUCTOS } from "@/lib/mockProductos";
 
 type ProductoNuevo = Omit<Producto, "id" | "created_at">;
 
+const SUPABASE_CONFIGURADO =
+  !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+// Devuelve productos de muestra si Supabase no esta configurado, para poder
+// visualizar el panel admin antes de cargar el stock real.
 export async function listarProductos(): Promise<Producto[]> {
+  if (!SUPABASE_CONFIGURADO) return ordenarProductos(MOCK_PRODUCTOS);
   const { data, error } = await createClient().from("productos").select("*");
   if (error) throw error;
   return ordenarProductos((data ?? []) as Producto[]);

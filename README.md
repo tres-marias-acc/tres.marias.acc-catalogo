@@ -37,7 +37,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
 ## Pendiente antes de lanzar
 
-- **Logo real**: `public/brand/caligrafia.svg`, `public/brand/monogram.svg` y `app/icon.svg` son placeholders de texto ("Tres Marías" / "TM") con la paleta de marca. Reemplazar por el archivo de logo real cuando esté listo (mismas dimensiones/uso: caligrafia = hero + footer, monogram = navbar + admin, icon = favicon).
+- **Logo real**: `public/brand/caligrafia.png` (hero + footer) ya es el logo real. `public/brand/monogram.svg` y `app/icon.svg` siguen siendo placeholders de texto ("TM") con la paleta de marca — reemplazar cuando llegue una versión ícono/favicon del logo.
 - **Fuente de título**: `app/layout.tsx` usa Cormorant Garamond como placeholder hasta tener los archivos `.woff2` de RoxboroughCF (fuente de marca). El comentario en ese archivo explica el cambio a `next/font/local`.
 - **Zona de envíos**: se sacó la línea de ubicación del footer (era específica del proyecto base). Agregarla de nuevo en `components/landing/Footer.tsx` si se quiere mostrar ciudad/zona de envíos.
 
@@ -47,7 +47,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
   - Número WhatsApp: código de país + número, sin `+` ni espacios. Ej: `5491112345678`.
 - **Categorías y subcategorías** → `lib/types.ts` (`CATEGORIAS`, `SUBCATEGORIAS`). Hoy cada categoría es su propia subcategoría única (sin división interna); si hace falta separar por tipo (ej: Aritos → Argolla/Colgante) alcanza con agregar valores ahí. También hay que actualizar el `check` de `categoria`/`subcategoria` en `supabase/schema.sql` si el proyecto Supabase ya está creado.
 - **Paleta de colores** → `app/globals.css` (`@theme`, tokens `--color-marias-*`).
-- **Logos** → `public/brand/caligrafia.svg` (hero) y `public/brand/monogram.svg` (navbar/footer/admin). Favicon: `app/icon.svg`.
+- **Logos** → `public/brand/caligrafia.png` (hero + footer) y `public/brand/monogram.svg` (navbar/admin, placeholder). Favicon: `app/icon.svg` (placeholder).
 - **Fuentes** → `app/layout.tsx` (`next/font`).
 - **Productos** → todo desde `/admin` (crear, editar, eliminar, reordenar con drag & drop, cambiar estado, subir fotos).
 

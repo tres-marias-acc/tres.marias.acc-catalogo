@@ -26,8 +26,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
   ),
-  title: `${config.marca} | Accesorios Importados 💍`,
+  title: `${config.marca} | Accesorios & Fragancias 🤍`,
   description: config.tagline,
+  icons: {
+    icon: "/brand/caligrafia.original.png",
+  },
   openGraph: {
     title: config.marca,
     description: config.tagline,

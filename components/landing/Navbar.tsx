@@ -9,8 +9,7 @@ import { config } from "@/lib/config";
 
 const LINKS: { label: string; categoria: Categoria | null; href: string }[] = [
   { label: "Destacados", categoria: null, href: "#destacados" },
-  ...CATEGORIAS.map((c) => ({ label: c, categoria: c, href: "#catalogo" })),
-  { label: "Por Encargo", categoria: null, href: "#por-encargo" },
+  { label: "Productos", categoria: null, href: "#catalogo" },
   { label: "Contacto", categoria: null, href: "#contacto" },
 ];
 
@@ -61,7 +60,7 @@ export default function Navbar() {
     >
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <a href="#inicio" aria-label="Inicio">
-          <Image src="/brand/monogram.svg" alt={config.marca} width={48} height={36} />
+          <Image src="/brand/caligrafia.png" alt={config.marca} width={140} height={38} />
         </a>
 
         {/* Desktop */}

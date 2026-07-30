@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Categoria, Producto } from "@/lib/types";
+import { GRUPOS_FILTRO } from "@/lib/types";
 import { filtrarProductos, rangoPrecios } from "@/lib/catalog";
 import FilterBar from "./FilterBar";
 import ProductCard from "./ProductCard";
@@ -13,9 +14,11 @@ export default function CatalogSection({
   productos: Producto[];
 }) {
   const [categoria, setCategoria] = useState<Categoria | null>(null);
+  // Grupo del filtro principal abierto (ej: "Fragancias"), o null si hay uno
+  // suelto (Invierno) o ninguno seleccionado (Todos).
+  const [grupo, setGrupo] = useState<string | null>(null);
   const [subcategoria, setSubcategoria] = useState<string | null>(null);
   const [soloDisponibles, setSoloDisponibles] = useState(false);
-  const [busqueda, setBusqueda] = useState("");
   // Los extremos de la barra salen del catalogo, que no cambia en runtime.
   const { piso, tope } = rangoPrecios(productos);
   const [precioMin, setPrecioMin] = useState(piso);
@@ -35,17 +38,27 @@ export default function CatalogSection({
       };
       setCategoria(detail.categoria);
       setSubcategoria(null);
+      setGrupo(null);
     }
     window.addEventListener("tresmarias:set-filter", onSetFilter);
     return () => window.removeEventListener("tresmarias:set-filter", onSetFilter);
   }, []);
 
+  // Sin categoria puntual pero con un grupo abierto (ej: tocaste "Fragancias"
+  // sin elegir subtipo todavia): mostrar solo lo que pertenece a ese grupo.
+  const categoriasDelGrupo = grupo
+    ? GRUPOS_FILTRO.find((g) => g.label === grupo)?.categorias ?? null
+    : null;
+  const productosVisibles = categoriasDelGrupo
+    ? productos.filter((p) => categoriasDelGrupo.includes(p.categoria))
+    : productos;
+
   const visibles = filtrarProductos(
-    productos,
+    productosVisibles,
     categoria,
     subcategoria,
     soloDisponibles,
-    busqueda,
+    null,
     precioMin,
     precioMax
   );
@@ -62,21 +75,22 @@ export default function CatalogSection({
       </motion.h2>
 
       <FilterBar
+        productos={productos}
         categoria={categoria}
+        grupo={grupo}
         subcategoria={subcategoria}
         soloDisponibles={soloDisponibles}
         onCategoria={(c) => {
           setCategoria(c);
           setSubcategoria(null);
         }}
+        onGrupo={setGrupo}
         onSubcategoria={setSubcategoria}
         onSoloDisponibles={setSoloDisponibles}
-        busqueda={busqueda}
         precioMin={precioMin}
         precioMax={precioMax}
         precioPiso={piso}
         precioTope={tope}
-        onBusqueda={setBusqueda}
         onPrecio={(min, max) => {
           setPrecioMin(min);
           setPrecioMax(max);

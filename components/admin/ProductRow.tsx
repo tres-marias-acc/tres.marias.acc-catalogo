@@ -47,8 +47,8 @@ export default function ProductRow({
           }
           className={`shrink-0 px-1 text-lg leading-none transition-colors ${
             producto.destacado
-              ? "text-amber-400 hover:text-amber-500"
-              : "text-neutral-300 hover:text-amber-400"
+              ? "text-marias-500 hover:text-marias-600"
+              : "text-neutral-300 hover:text-marias-400"
           }`}
         >
           ★
@@ -56,11 +56,6 @@ export default function ProductRow({
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <span className="truncate text-sm">{producto.nombre}</span>
-            {producto.marca && (
-              <span className="shrink-0 truncate text-xs text-neutral-400">
-                {producto.marca}
-              </span>
-            )}
           </div>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-xs text-marias-600">
@@ -93,7 +88,7 @@ export default function ProductRow({
         </select>
         <button
           onClick={onEditar}
-          className="shrink-0 px-2 text-xs text-marias-500 hover:underline"
+          className="shrink-0 px-2 text-xs text-marias-600 hover:underline"
         >
           Editar
         </button>

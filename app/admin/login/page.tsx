@@ -38,7 +38,7 @@ export default function LoginPage() {
         className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm ring-1 ring-marias-100"
       >
         <div className="flex flex-col items-center gap-2">
-          <Image src="/brand/monogram.svg" alt={config.marca} width={72} height={54} />
+          <Image src="/brand/caligrafia.png" alt={config.marca} width={160} height={44} />
           <h1 className="font-serif text-2xl text-marias-700">Panel Admin</h1>
         </div>
 
@@ -69,7 +69,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={cargando}
-          className="mt-6 w-full rounded-full bg-marias-400 py-2.5 text-sm text-white transition-colors hover:bg-marias-500 disabled:opacity-50"
+          className="mt-6 w-full rounded-full bg-marias-400 py-2.5 text-sm font-medium text-marias-700 transition-colors hover:bg-marias-300 disabled:opacity-50"
         >
           {cargando ? "Ingresando…" : "Ingresar"}
         </button>

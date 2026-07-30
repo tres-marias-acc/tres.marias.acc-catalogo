@@ -4,7 +4,6 @@ import {
   filtrarProductos,
   formatearPrecio,
   ordenarProductos,
-  productosPorEncargo,
   productosDestacados,
   rangoPrecios,
 } from "@/lib/catalog";
@@ -17,11 +16,11 @@ function producto(over: Partial<Producto> = {}): Producto {
   return {
     id: `id-${n}`,
     nombre: `Producto ${n}`,
-    marca: null,
     descripcion_corta: null,
     imagen_url: null,
     categoria: "Aritos",
     subcategoria: "Aritos",
+    aroma: null,
     estado: "Disponible",
     precio: 10000,
     destacado: false,
@@ -59,11 +58,10 @@ describe("filtrarProductos", () => {
   it("solo disponibles filtra por estado Disponible", () => {
     const qs = [
       producto({ estado: "Disponible" }),
-      producto({ estado: "Por Encargo" }),
       producto({ estado: "Sin stock" }),
     ];
     expect(filtrarProductos(qs, null, null, true)).toHaveLength(1);
-    expect(filtrarProductos(qs, null, null, false)).toHaveLength(3);
+    expect(filtrarProductos(qs, null, null, false)).toHaveLength(2);
   });
   it("filtra por subcategoria", () => {
     const qs = [
@@ -81,11 +79,6 @@ describe("filtrarProductos", () => {
     ];
     expect(filtrarProductos(rs, null, null, false, "argolla")).toHaveLength(1);
     expect(filtrarProductos(rs, null, null, false, "ARGOLLA")).toHaveLength(1);
-  });
-
-  it("busqueda filtra por marca y es null-safe", () => {
-    const rs = [producto({ marca: "Swarovski" }), producto({ marca: null })];
-    expect(filtrarProductos(rs, null, null, false, "swarovski")).toHaveLength(1);
   });
 
   it("busqueda vacia o solo espacios no filtra", () => {
@@ -127,13 +120,6 @@ describe("filtrarProductos", () => {
     expect(
       filtrarProductos(rs, "Aritos", null, false, "dorados", 10000, 20000)
     ).toHaveLength(1);
-  });
-});
-
-describe("productosPorEncargo", () => {
-  it("devuelve solo estado Por Encargo", () => {
-    const ps = [producto(), producto({ estado: "Por Encargo" })];
-    expect(productosPorEncargo(ps)).toHaveLength(1);
   });
 });
 

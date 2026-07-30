@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  /* Paleta Tres Marías, derivada del rosa de marca (#ffd7f1). */
-  --color-marias-50: #fdf7fb;
-  --color-marias-100: #ffe8f3;
-  --color-marias-200: #ffd7f1;
-  --color-marias-300: #e6aad0;
-  --color-marias-400: #cb86b3;
-  --color-marias-500: #b65d97;
-  --color-marias-600: #99487c;
-  --color-marias-700: #763d62;
+  /* Paleta Tres Marías: dorado + crema + negro elegante. */
+  --color-marias-50: #fefdfb;
+  --color-marias-100: #fbf2e3;
+  --color-marias-200: #f0dcb8;
+  --color-marias-300: #e8c9a0;
+  --color-marias-400: #d4a574;
+  --color-marias-500: #ad7a47;
+  --color-marias-600: #8a6238;
+  --color-marias-700: #2c2c2c;
   /* Acentos extra de marca, para fondos/badges puntuales. */
-  --color-marias-blush: #fadddd;
-  --color-marias-cream: #ede2d2;
+  --color-marias-blush: #f3e0c0;
+  --color-marias-cream: #f7efe1;
   /* TODO: --font-titulo usa Cormorant Garamond como placeholder hasta
      tener los archivos .woff2 de RoxboroughCF (fuente de marca real).
      Ver README para el paso de reemplazo. */
@@ -25,8 +25,8 @@ html {
 }
 
 body {
-  background: #ffffff;
-  color: #262626;
+  background: #fefdfb;
+  color: #2c2c2c;
   font-family: var(--font-sans);
 }
 

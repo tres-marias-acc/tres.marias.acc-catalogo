@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import type { Categoria, Estado, Producto, Tono } from "@/lib/types";
-import { CATEGORIAS, ESTADOS, SUBCATEGORIAS } from "@/lib/types";
+import {
+  CATEGORIAS,
+  CATEGORIAS_SUELTAS,
+  ESTADOS,
+  GRUPOS_FILTRO,
+  SUBCATEGORIAS,
+} from "@/lib/types";
 import { actualizarProducto, crearProducto, subirImagen } from "@/lib/db";
 import { comprimirImagen } from "@/lib/imagen";
 
@@ -12,9 +18,29 @@ interface Props {
   onSaved: () => void;
 }
 
+// Grupo (filtro principal del Catalogo) al que pertenece una categoria real.
+// Las sueltas (ej: Invierno) son su propio grupo.
+function grupoDeCategoria(c: Categoria): string {
+  return GRUPOS_FILTRO.find((g) => g.categorias.includes(c))?.label ?? c;
+}
+
+function categoriasDelGrupo(grupo: string): Categoria[] {
+  return GRUPOS_FILTRO.find((g) => g.label === grupo)?.categorias ?? [grupo as Categoria];
+}
+
+const OPCIONES_GRUPO: string[] = [
+  ...GRUPOS_FILTRO.map((g) => g.label),
+  ...CATEGORIAS_SUELTAS,
+];
+
+// Colores: solo aplica a Accesorios, paleta fija (no hay input libre).
+const COLORES_DISPONIBLES: Tono[] = [
+  { nombre: "Dorado", hex: "#d4af37" },
+  { nombre: "Plateado", hex: "#c0c0c0" },
+];
+
 export default function ProductForm({ producto, onClose, onSaved }: Props) {
   const [nombre, setNombre] = useState(producto?.nombre ?? "");
-  const [marca, setMarca] = useState(producto?.marca ?? "");
   const [descripcion, setDescripcion] = useState(
     producto?.descripcion_corta ?? ""
   );
@@ -24,6 +50,10 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
   const [categoria, setCategoria] = useState<Categoria>(
     producto?.categoria ?? CATEGORIAS[0]
   );
+  const [grupo, setGrupo] = useState(grupoDeCategoria(categoria));
+  const esAccesorio = grupo === "Accesorios";
+  const esFragancia = grupo === "Fragancias";
+  const [aroma, setAroma] = useState(producto?.aroma ?? "");
   const [subcategoria, setSubcategoria] = useState(
     producto?.subcategoria ?? SUBCATEGORIAS[CATEGORIAS[0]][0]
   );
@@ -44,21 +74,24 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
     setSubcategoria(SUBCATEGORIAS[c][0]);
   }
 
+  function cambiarGrupo(g: string) {
+    setGrupo(g);
+    cambiarCategoria(categoriasDelGrupo(g)[0]);
+    if (g !== "Accesorios") setTonos([]);
+    if (g !== "Fragancias") setAroma("");
+  }
+
   function elegirArchivo(f: File | null) {
     setArchivo(f);
     if (f) setPreview(URL.createObjectURL(f));
   }
 
-  function agregarTono() {
-    setTonos([...tonos, { nombre: "", hex: "#e6aad0" }]);
-  }
-
-  function actualizarTono(i: number, campo: keyof Tono, valor: string) {
-    setTonos(tonos.map((t, j) => (j === i ? { ...t, [campo]: valor } : t)));
-  }
-
-  function quitarTono(i: number) {
-    setTonos(tonos.filter((_, j) => j !== i));
+  function toggleColor(color: Tono) {
+    setTonos((prev) =>
+      prev.some((t) => t.nombre === color.nombre)
+        ? prev.filter((t) => t.nombre !== color.nombre)
+        : [...prev, color]
+    );
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -80,20 +113,17 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
         const blob = await comprimirImagen(archivo);
         imagen_url = await subirImagen(blob, `${crypto.randomUUID()}.webp`);
       }
-      const tonosLimpios = tonos
-        .map((t) => ({ ...t, nombre: t.nombre.trim() }))
-        .filter((t) => t.nombre !== "");
       const datos = {
         nombre: nombre.trim(),
-        marca: marca.trim() || null,
         descripcion_corta: descripcion.trim(),
         imagen_url,
         categoria,
         subcategoria,
+        aroma: esFragancia ? aroma.trim() || null : null,
         estado,
         precio: precioNumero,
         destacado,
-        tonos: tonosLimpios.length > 0 ? tonosLimpios : null,
+        tonos: tonos.length > 0 ? tonos : null,
       };
       if (producto) {
         await actualizarProducto(producto.id, datos);
@@ -127,16 +157,6 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
         </label>
 
         <label className="mt-4 block text-sm text-neutral-600">
-          Marca
-          <input
-            value={marca}
-            onChange={(e) => setMarca(e.target.value)}
-            placeholder="Opcional"
-            className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-marias-300"
-          />
-        </label>
-
-        <label className="mt-4 block text-sm text-neutral-600">
           Descripción corta ({descripcion.length}/150)
           <textarea
             value={descripcion}
@@ -164,24 +184,24 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
           <label className="block text-sm text-neutral-600">
             Categoría
             <select
-              value={categoria}
-              onChange={(e) => cambiarCategoria(e.target.value as Categoria)}
+              value={grupo}
+              onChange={(e) => cambiarGrupo(e.target.value)}
               className="mt-1 w-full rounded-lg border border-neutral-200 px-2 py-2 text-sm"
             >
-              {CATEGORIAS.map((c) => (
-                <option key={c}>{c}</option>
+              {OPCIONES_GRUPO.map((g) => (
+                <option key={g}>{g}</option>
               ))}
             </select>
           </label>
           <label className="block text-sm text-neutral-600">
             Subcategoría
             <select
-              value={subcategoria}
-              onChange={(e) => setSubcategoria(e.target.value)}
+              value={categoria}
+              onChange={(e) => cambiarCategoria(e.target.value as Categoria)}
               className="mt-1 w-full rounded-lg border border-neutral-200 px-2 py-2 text-sm"
             >
-              {SUBCATEGORIAS[categoria].map((s) => (
-                <option key={s}>{s}</option>
+              {categoriasDelGrupo(grupo).map((c) => (
+                <option key={c}>{c}</option>
               ))}
             </select>
           </label>
@@ -210,49 +230,46 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
           Destacado
         </label>
 
-        <div className="mt-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-neutral-600">Tonos</span>
-            <button
-              type="button"
-              onClick={agregarTono}
-              className="rounded-full bg-marias-50 px-3 py-1 text-xs text-marias-700 hover:bg-marias-100"
-            >
-              + Agregar tono
-            </button>
-          </div>
-          {tonos.length > 0 && (
-            <div className="mt-2 space-y-2">
-              {tonos.map((tono, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={tono.hex}
-                    onChange={(e) => actualizarTono(i, "hex", e.target.value)}
-                    className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-neutral-200"
-                    aria-label={`Color del tono ${i + 1}`}
-                  />
-                  <input
-                    value={tono.nombre}
-                    placeholder="Nombre del tono"
-                    onChange={(e) =>
-                      actualizarTono(i, "nombre", e.target.value)
-                    }
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-marias-300"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => quitarTono(i)}
-                    aria-label={`Quitar tono ${i + 1}`}
-                    className="shrink-0 rounded-full px-2 py-1 text-sm text-neutral-400 hover:bg-red-50 hover:text-red-500"
+        {esFragancia && (
+          <label className="mt-4 block text-sm text-neutral-600">
+            Aroma
+            <input
+              value={aroma}
+              onChange={(e) => setAroma(e.target.value)}
+              placeholder="Ej: Lavanda"
+              className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-marias-300"
+            />
+          </label>
+        )}
+
+        {esAccesorio && (
+          <div className="mt-4">
+            <span className="text-sm text-neutral-600">Colores</span>
+            <div className="mt-2 flex gap-3">
+              {COLORES_DISPONIBLES.map((color) => {
+                const activo = tonos.some((t) => t.nombre === color.nombre);
+                return (
+                  <label
+                    key={color.nombre}
+                    className="flex cursor-pointer items-center gap-1.5 text-sm text-neutral-600"
                   >
-                    ✕
-                  </button>
-                </div>
-              ))}
+                    <input
+                      type="checkbox"
+                      checked={activo}
+                      onChange={() => toggleColor(color)}
+                      className="h-4 w-4 accent-marias-400"
+                    />
+                    <span
+                      className="h-3.5 w-3.5 rounded-full ring-1 ring-black/10"
+                      style={{ backgroundColor: color.hex }}
+                    />
+                    {color.nombre}
+                  </label>
+                );
+              })}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         <label className="mt-4 block text-sm text-neutral-600">
           Imagen
@@ -278,14 +295,14 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full px-4 py-2 text-sm text-neutral-500 ring-1 ring-neutral-200 hover:bg-neutral-50"
+            className="rounded-full px-4 py-2 text-sm text-marias-600 ring-1 ring-marias-200 hover:bg-marias-50"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={guardando}
-            className="rounded-full bg-marias-400 px-5 py-2 text-sm text-white hover:bg-marias-500 disabled:opacity-50"
+            className="rounded-full bg-marias-400 px-5 py-2 text-sm font-medium text-marias-700 hover:bg-marias-300 disabled:opacity-50"
           >
             {guardando ? "Guardando…" : "Guardar"}
           </button>

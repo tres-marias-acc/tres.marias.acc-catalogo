@@ -18,19 +18,19 @@ export default function OgImage() {
           alignItems: "center",
           justifyContent: "center",
           background:
-            "linear-gradient(135deg, #edc7c0 0%, #faf1ef 55%, #ffffff 100%)",
+            "linear-gradient(135deg, #E8C9A0 0%, #FBF2E3 55%, #FEFDFB 100%)",
         }}
       >
         <div
           style={{
             fontSize: 104,
             fontStyle: "italic",
-            color: "#8f5a52",
+            color: "#2C2C2C",
           }}
         >
           {config.marca}
         </div>
-        <div style={{ fontSize: 38, color: "#bd7c72", marginTop: 28 }}>
+        <div style={{ fontSize: 38, color: "#8A6238", marginTop: 28 }}>
           {config.tagline}
         </div>
       </div>
