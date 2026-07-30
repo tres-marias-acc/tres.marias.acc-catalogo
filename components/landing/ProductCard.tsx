@@ -84,7 +84,9 @@ export default function ProductCard({
           {formatearPrecio(producto.precio)}
         </p>
         <a
-          href={whatsappUrl(`Hola! Tengo una consulta *${producto.nombre}*`)}
+          href={whatsappUrl(
+            `Hola, tengo una consulta por *${producto.nombre} - ${formatearPrecio(producto.precio)}*`
+          )}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-2 flex items-center justify-center gap-1.5 rounded-full bg-marias-300 px-3 py-1.5 text-xs font-medium text-marias-700 transition-transform hover:scale-[1.02] hover:bg-marias-200"
