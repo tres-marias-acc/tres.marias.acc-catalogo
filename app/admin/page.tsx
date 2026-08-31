@@ -10,6 +10,7 @@ import { agruparPorSubcategoria } from "@/lib/catalog";
 import { config } from "@/lib/config";
 import {
   actualizarProducto,
+  eliminarImagen,
   eliminarProducto,
   listarProductos,
   guardarOrden,
@@ -67,6 +68,7 @@ export default function AdminPage() {
     setProductos((prev) => prev.filter((x) => x.id !== p.id));
     try {
       await eliminarProducto(p.id);
+      await eliminarImagen(p.imagen_url);
     } catch {
       setProductos(anterior);
       alert("No se pudo eliminar el producto. Probá de nuevo.");

@@ -9,7 +9,12 @@ import {
   GRUPOS_FILTRO,
   SUBCATEGORIAS,
 } from "@/lib/types";
-import { actualizarProducto, crearProducto, subirImagen } from "@/lib/db";
+import {
+  actualizarProducto,
+  crearProducto,
+  eliminarImagen,
+  subirImagen,
+} from "@/lib/db";
 import { comprimirImagen } from "@/lib/imagen";
 
 interface Props {
@@ -142,6 +147,11 @@ export default function ProductForm({ producto, onClose, onSaved }: Props) {
       };
       if (producto) {
         await actualizarProducto(producto.id, datos);
+        // Si se reemplazo la foto, borrar la vieja del storage recien
+        // despues de guardar bien (no antes, para no perderla si falla).
+        if (archivo && producto.imagen_url) {
+          await eliminarImagen(producto.imagen_url);
+        }
       } else {
         await crearProducto({ ...datos, orden_display: 999 });
       }

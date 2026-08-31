@@ -64,3 +64,25 @@ export async function subirImagen(blob: Blob, nombre: string): Promise<string> {
   return supabase.storage.from("productos-img").getPublicUrl(nombre).data
     .publicUrl;
 }
+
+// Extrae el path del archivo dentro del bucket a partir de la URL publica
+// que devuelve Supabase (todo lo que va despues de "/<bucket>/").
+function pathDesdeUrlPublica(url: string, bucket: string): string | null {
+  const marcador = `/${bucket}/`;
+  const i = url.indexOf(marcador);
+  if (i === -1) return null;
+  return decodeURIComponent(url.slice(i + marcador.length));
+}
+
+// Borrado best-effort: si la imagen ya no existe o la URL no matchea el
+// bucket, no rompe el flujo que la llama (eliminar/editar producto).
+export async function eliminarImagen(url: string | null): Promise<void> {
+  if (!url) return;
+  const path = pathDesdeUrlPublica(url, "productos-img");
+  if (!path) return;
+  try {
+    await createClient().storage.from("productos-img").remove([path]);
+  } catch {
+    // No-op: no bloquear al usuario por una limpieza de storage fallida.
+  }
+}
