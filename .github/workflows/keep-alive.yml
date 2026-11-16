@@ -1,0 +1,23 @@
+name: Keep Supabase alive
+
+# Una query real a la API de Supabase cuenta como actividad y evita que el
+# plan gratis pause el proyecto por inactividad. La URL y la publishable key
+# son las mismas que ya viajan en el JS publico del sitio.
+on:
+  schedule:
+    - cron: "0 15 */2 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query productos
+        env:
+          SUPABASE_URL: https://ztfrodtoqxbxliuazsue.supabase.co
+          SUPABASE_KEY: sb_publishable_D35aXcxfBPLTUyvqOlFR5A_-1XiIcrq
+        run: |
+          curl --fail --silent --show-error --max-time 30 \
+            "$SUPABASE_URL/rest/v1/productos?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY"
